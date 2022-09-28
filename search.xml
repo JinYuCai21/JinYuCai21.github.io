@@ -1554,7 +1554,9 @@
     <url>/2022/09/25/%E9%AB%98%E7%AD%89%E6%95%B0%E5%AD%A6-%E4%B8%AA%E4%BA%BA%E6%98%93%E9%94%99%E7%82%B9/</url>
     <content><![CDATA[<h2 id="无穷大与无穷小"><a href="#无穷大与无穷小" class="headerlink" title="无穷大与无穷小"></a>无穷大与无穷小</h2><h3 id="无穷大"><a href="#无穷大" class="headerlink" title="无穷大"></a>无穷大</h3><ul>
 <li><strong>两个</strong>无穷大相乘一定等于无穷大</li>
-<li>无穷大与有界变量的和一定为无穷大<h3 id="无穷小"><a href="#无穷小" class="headerlink" title="无穷小"></a>无穷小</h3></li>
+<li>无穷大与有界变量的和一定为无穷大</li>
+</ul>
+<h3 id="无穷小"><a href="#无穷小" class="headerlink" title="无穷小"></a>无穷小</h3><ul>
 <li>有限个无穷小之和一定为无穷小</li>
 <li>有限个无穷小之积一定为无穷小</li>
 <li>无穷小与有界量之积仍是无穷小</li>
@@ -1587,8 +1589,35 @@
 <li><p>单调有界<br>1）证明数列存在单调有界<br>2）计算出<code>a = f(a)</code></p>
 </li>
 </ol>
-<h4 id="求解极限的方法"><a href="#求解极限的方法" class="headerlink" title="求解极限的方法"></a>求解极限的方法</h4><ol>
-<li>利用基本极限求极限<br> 1.1 常用的基本极限</li>
+<h4 id="求解极限的方法"><a href="#求解极限的方法" class="headerlink" title="求解极限的方法"></a>求解极限的方法</h4><p>利用基本极限求极限  </p>
+<ol>
+<li><p>常用的基本极限<br>基础篇 P17  </p>
+<pre><code> &lt;!-- $\lim\limits_&#123;x\to 0&#125;\frac&#123;\sin(x)&#125;&#123;x&#125; = 1$  
+ $\lim\limits_&#123;x\to 0&#125; (1+x)^\frac&#123;1&#125;&#123;x&#125; = e$
+ $\lim\limits_&#123;x\to \infty&#125; (1+x)^\frac&#123;1&#125;&#123;x&#125; = 1$ --&gt;
+</code></pre></li>
+<li><p>$1^\infty$ 型极限常用结论<br>知道$1^\infty$ 是不定式，所以要化成$e^x$ 的型。具体步骤<br>当$\lim \alpha(x) = 0$, $\lim \beta(x) = \infty$, $\lim \alpha(x)\beta(x) = A$<br>(1) 写成标准型 $\lim[1+\alpha(x)]^\beta(x)$<br>(2) 求出A的值 $\lim \alpha(x)\beta(x) = A$式 = e^A$ </p>
+</li>
+<li><p>利用夹逼原理求极限<br>常用的基本不等式有两个</p>
+<ul>
+<li>$\sin(x) &lt; x &lt; \tan(x), x\in(0,\frac{\pi}{2})$ </li>
+<li>$\frac{x}{x + 1} &lt; \ln(1+X) &lt; x, x \in(0,+\infty)<br>-&gt; $\frac{1}{x+1} &lt; \ln(x+1) - \ln(x) &lt; \frac{1}{x}$<br>例题 $\lim_{x\to \infty} (\frac{1}{n+1} + \frac{1}{n+2} + … + \frac{1}{2n})$ 求极限<br>法一：使用第二条基本不等式推论来使用夹逼原理<br>法二：使用定积分的定义来求极限</li>
+</ul>
+</li>
+<li><p>利用单调有界准则求极限<br><strong>题目主要会出现递推公式的情况下</strong></p>
+<ul>
+<li><ol>
+<li>利用单调有界证明极限存在。比如当一个函数有下届并且单调减的话，说明这个函数一定存在极限值</li>
+</ol>
+</li>
+<li><ol>
+<li>设极限值，将极限值带入到递推公式当中</li>
+</ol>
+</li>
+</ul>
+</li>
+<li><p>利用定积分定义求极限</p>
+</li>
 </ol>
 ]]></content>
       <categories>
