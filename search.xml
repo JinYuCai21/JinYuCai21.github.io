@@ -168,6 +168,47 @@
       </tags>
   </entry>
   <entry>
+    <title>AcWing 1134. 最短路计数</title>
+    <url>/2022/09/06/AcWing-1134-%E6%9C%80%E7%9F%AD%E8%B7%AF%E8%AE%A1%E6%95%B0/</url>
+    <content><![CDATA[<h2 id="AcWing-1134-最短路计数"><a href="#AcWing-1134-最短路计数" class="headerlink" title="AcWing 1134. 最短路计数"></a><a href="https://www.acwing.com/problem/content/1136/">AcWing 1134. 最短路计数</a></h2><p>给出一个 N 个顶点 M 条边的无向无权图，顶点编号为 1 到 N。</p>
+<p>问从顶点 1 开始，到其他每个点的最短路有几条。</p>
+<p>输入格式<br>第一行包含 2 个正整数 N,M，为图的顶点数与边数。</p>
+<p>接下来 M 行，每行两个正整数 x,y，表示有一条顶点 x 连向顶点 y 的边，请注意可能有自环与重边。</p>
+<p>输出格式<br>输出 N 行，每行一个非负整数，第 i 行输出从顶点 1 到顶点 i 有多少条不同的最短路，由于答案有可能会很大，你只需要输出对 100003 取模后的结果即可。</p>
+<p>如果无法到达顶点 i 则输出 0。</p>
+<p>数据范围<br>1≤N≤105,<br>1≤M≤2×105<br>输入样例：<br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">5 7</span><br><span class="line">1 2</span><br><span class="line">1 3</span><br><span class="line">2 4</span><br><span class="line">3 4</span><br><span class="line">2 3</span><br><span class="line">4 5</span><br><span class="line">4 5</span><br></pre></td></tr></table></figure><br>输出样例：<br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1</span><br><span class="line">1</span><br><span class="line">1</span><br><span class="line">2</span><br><span class="line">4</span><br></pre></td></tr></table></figure></p>
+<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p>根据dp来划分状态并记录最小花费的所有方案</p>
+<ol>
+<li>先算出全局最小值</li>
+<li>分别求出每个子集中等于全局最小值的元素个数</li>
+</ol>
+<p>这里说明为什么在dp问题我们可以使用循环的方式来更新，而最短路不行<br> 1.dp能使用循环的方式，是因为当前状态前面的状态已经计算完毕，所以可以利用前面状态来更新当前的状态。这也说明了只有当状态转移不具有依赖关系的时候而具有拓扑序的时候，才可以利用dp方式来求解</p>
+<p>最短路算法中即使图中有环也可以将环图转化拓扑图(最短路树) -&gt; 转化为拓扑图之后就可以使用dp求解（图中有负环或零环的情况下求方案数）<br> 由于dist[j] = min(dist[j], dist[t] + w[i])所以每一个点都一定会被前驱节点更新，有可能会被一个节点更新有可能会被多个节点更新，我们只需要要保留一个/多个更新当前节点的前驱节点就可以转化成一个拓扑图</p>
+<p> <strong>在这里要注意</strong>， 如果当边权为0的时候，说明当前两个状态之间其实等价的关系，本质上可以相互转化的，这时候就会存在一个权重为0的环，可以在这个环上绕无限圈，所以这个时候是不能使用最短路来求的（等价于图上有负环的时候是不能通过最短路来求）</p>
+<p> 由于图上没有负权边，所以如果图上存在一个环，说明这个环一定是边权为0的环（可以通过dist[i] = dist[j] + w[u] == dist[j] = dist[k] + w[v] == dist[k] = dist[i] + w[p] 算出来)</p>
+<p>总结：</p>
+<ul>
+<li>只要图中没有负权图的dp问题即使有正环都是可以使用最短路的方式来求解的。如有有负权边的情况，就需要判断是否有负环，或则能否转化成拓扑图的形式。</li>
+<li>如果图中含有负环（或零环）的情况下，使用spfa求解。<ol>
+<li>先用spfa跑出来最短距离</li>
+<li>建立拓扑树</li>
+<li>用dist[j] = dist[t] + w[i]判断是否成立，成立就更新，但必须满足t已经完全更新过。</li>
+</ol>
+</li>
+</ul>
+<h2 id="CODE"><a href="#CODE" class="headerlink" title="CODE"></a>CODE</h2><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> rep(i,a,n) for (int i=a;i&lt;n;i++)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> per(i,a,n) for (int i=n-1;i&gt;=a;i--)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> pb push_back</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> eb emplace_back</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> mp make_pair</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> all(x) (x).begin(),(x).end()</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> fi first</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> se second</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SZ(x) ((int)(x).size())</span></span><br><span class="line"><span class="keyword">typedef</span> vector&lt;<span class="type">int</span>&gt; VI;</span><br><span class="line"><span class="keyword">typedef</span> basic_string&lt;<span class="type">int</span>&gt; BI;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">long</span> <span class="type">long</span> ll;</span><br><span class="line"><span class="keyword">typedef</span> pair&lt;<span class="type">int</span>,<span class="type">int</span>&gt; PII;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">double</span> db;</span><br><span class="line"><span class="type">const</span> ll mod=<span class="number">100003</span>;</span><br><span class="line"><span class="type">const</span> <span class="type">int</span> INF = <span class="number">0x3f3f3f3f</span>;</span><br><span class="line"><span class="function">ll <span class="title">gcd</span><span class="params">(ll a,ll b)</span> </span>&#123; <span class="keyword">return</span> b?<span class="built_in">gcd</span>(b,a%b):a;&#125;</span><br><span class="line"><span class="comment">// head</span></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> N = <span class="number">100010</span>, M = <span class="number">400010</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> h[N], e[M], ne[M], idx;</span><br><span class="line"><span class="type">int</span> n, m;</span><br><span class="line"><span class="type">int</span> dist[N], cnt[N], q[N];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">add</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    e[idx] = b, ne[idx] = h[a], h[a] = idx ++;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">bfs</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">memset</span>(dist, <span class="number">0x3f</span>, <span class="keyword">sizeof</span> dist);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> hh = <span class="number">0</span>, tt = <span class="number">1</span>;</span><br><span class="line">    q[hh] = <span class="number">1</span>;</span><br><span class="line">    dist[<span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">    cnt[<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(hh &lt;= tt)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">int</span> t = q[hh ++];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i = h[t]; ~i; i = ne[i])</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="type">int</span> j = e[i];</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(dist[j] &gt; dist[t] + <span class="number">1</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                dist[j] = dist[t] + <span class="number">1</span>;</span><br><span class="line">                cnt[j] = cnt[t];</span><br><span class="line">                q[++ tt] = j;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span>(dist[j] == dist[t] + <span class="number">1</span>) <span class="comment">// 最短路有多条</span></span><br><span class="line">            &#123;</span><br><span class="line">                cnt[j] = (cnt[j] + cnt[t]) % mod;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    cin &gt;&gt; n &gt;&gt; m;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// build</span></span><br><span class="line">    <span class="built_in">memset</span>(h, <span class="number">-1</span>, <span class="keyword">sizeof</span> h);</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">0</span>; i &lt; m; i ++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">int</span> a, b;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">&quot;%d%d&quot;</span>,&amp;a,&amp;b);</span><br><span class="line">        <span class="comment">// 题意可能有点问题应该所有边都是无向边</span></span><br><span class="line">        <span class="comment">// 5 5</span></span><br><span class="line">        <span class="comment">// 1 2  </span></span><br><span class="line">        <span class="comment">// 2 3</span></span><br><span class="line">        <span class="comment">// 3 4</span></span><br><span class="line">        <span class="comment">// 4 1</span></span><br><span class="line">        <span class="comment">// 4 5</span></span><br><span class="line">        <span class="built_in">add</span>(a,b);</span><br><span class="line">        <span class="built_in">add</span>(b,a); </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 最短路计数</span></span><br><span class="line">    <span class="built_in">bfs</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">        cout &lt;&lt; cnt[i] &lt;&lt; endl;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>AcWing</category>
+        <category>图论</category>
+        <category>最短路</category>
+        <category>与dp结合</category>
+      </categories>
+      <tags>
+        <tag>最短路</tag>
+        <tag>图论</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>AcWing 1131. 拯救大兵瑞恩</title>
     <url>/2022/09/05/AcWing-1131-%E6%8B%AF%E6%95%91%E5%A4%A7%E5%85%B5%E7%91%9E%E6%81%A9/</url>
     <content><![CDATA[<h2 id="AcWing-1131-拯救大兵瑞恩"><a href="#AcWing-1131-拯救大兵瑞恩" class="headerlink" title="AcWing 1131. 拯救大兵瑞恩"></a><a href="https://www.acwing.com/problem/content/1133/">AcWing 1131. 拯救大兵瑞恩</a></h2><p>1944 年，特种兵麦克接到国防部的命令，要求立即赶赴太平洋上的一个孤岛，营救被敌军俘虏的大兵瑞恩。</p>
@@ -211,47 +252,6 @@
       </tags>
   </entry>
   <entry>
-    <title>AcWing 1134. 最短路计数</title>
-    <url>/2022/09/06/AcWing-1134-%E6%9C%80%E7%9F%AD%E8%B7%AF%E8%AE%A1%E6%95%B0/</url>
-    <content><![CDATA[<h2 id="AcWing-1134-最短路计数"><a href="#AcWing-1134-最短路计数" class="headerlink" title="AcWing 1134. 最短路计数"></a><a href="https://www.acwing.com/problem/content/1136/">AcWing 1134. 最短路计数</a></h2><p>给出一个 N 个顶点 M 条边的无向无权图，顶点编号为 1 到 N。</p>
-<p>问从顶点 1 开始，到其他每个点的最短路有几条。</p>
-<p>输入格式<br>第一行包含 2 个正整数 N,M，为图的顶点数与边数。</p>
-<p>接下来 M 行，每行两个正整数 x,y，表示有一条顶点 x 连向顶点 y 的边，请注意可能有自环与重边。</p>
-<p>输出格式<br>输出 N 行，每行一个非负整数，第 i 行输出从顶点 1 到顶点 i 有多少条不同的最短路，由于答案有可能会很大，你只需要输出对 100003 取模后的结果即可。</p>
-<p>如果无法到达顶点 i 则输出 0。</p>
-<p>数据范围<br>1≤N≤105,<br>1≤M≤2×105<br>输入样例：<br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">5 7</span><br><span class="line">1 2</span><br><span class="line">1 3</span><br><span class="line">2 4</span><br><span class="line">3 4</span><br><span class="line">2 3</span><br><span class="line">4 5</span><br><span class="line">4 5</span><br></pre></td></tr></table></figure><br>输出样例：<br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1</span><br><span class="line">1</span><br><span class="line">1</span><br><span class="line">2</span><br><span class="line">4</span><br></pre></td></tr></table></figure></p>
-<h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p>根据dp来划分状态并记录最小花费的所有方案</p>
-<ol>
-<li>先算出全局最小值</li>
-<li>分别求出每个子集中等于全局最小值的元素个数</li>
-</ol>
-<p>这里说明为什么在dp问题我们可以使用循环的方式来更新，而最短路不行<br> 1.dp能使用循环的方式，是因为当前状态前面的状态已经计算完毕，所以可以利用前面状态来更新当前的状态。这也说明了只有当状态转移不具有依赖关系的时候而具有拓扑序的时候，才可以利用dp方式来求解</p>
-<p>最短路算法中即使图中有环也可以将环图转化拓扑图(最短路树) -&gt; 转化为拓扑图之后就可以使用dp求解（图中有负环或零环的情况下求方案数）<br> 由于dist[j] = min(dist[j], dist[t] + w[i])所以每一个点都一定会被前驱节点更新，有可能会被一个节点更新有可能会被多个节点更新，我们只需要要保留一个/多个更新当前节点的前驱节点就可以转化成一个拓扑图</p>
-<p> <strong>在这里要注意</strong>， 如果当边权为0的时候，说明当前两个状态之间其实等价的关系，本质上可以相互转化的，这时候就会存在一个权重为0的环，可以在这个环上绕无限圈，所以这个时候是不能使用最短路来求的（等价于图上有负环的时候是不能通过最短路来求）</p>
-<p> 由于图上没有负权边，所以如果图上存在一个环，说明这个环一定是边权为0的环（可以通过dist[i] = dist[j] + w[u] == dist[j] = dist[k] + w[v] == dist[k] = dist[i] + w[p] 算出来)</p>
-<p>总结：</p>
-<ul>
-<li>只要图中没有负权图的dp问题即使有正环都是可以使用最短路的方式来求解的。如有有负权边的情况，就需要判断是否有负环，或则能否转化成拓扑图的形式。</li>
-<li>如果图中含有负环（或零环）的情况下，使用spfa求解。<ol>
-<li>先用spfa跑出来最短距离</li>
-<li>建立拓扑树</li>
-<li>用dist[j] = dist[t] + w[i]判断是否成立，成立就更新，但必须满足t已经完全更新过。</li>
-</ol>
-</li>
-</ul>
-<h2 id="CODE"><a href="#CODE" class="headerlink" title="CODE"></a>CODE</h2><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> rep(i,a,n) for (int i=a;i&lt;n;i++)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> per(i,a,n) for (int i=n-1;i&gt;=a;i--)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> pb push_back</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> eb emplace_back</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> mp make_pair</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> all(x) (x).begin(),(x).end()</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> fi first</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> se second</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SZ(x) ((int)(x).size())</span></span><br><span class="line"><span class="keyword">typedef</span> vector&lt;<span class="type">int</span>&gt; VI;</span><br><span class="line"><span class="keyword">typedef</span> basic_string&lt;<span class="type">int</span>&gt; BI;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">long</span> <span class="type">long</span> ll;</span><br><span class="line"><span class="keyword">typedef</span> pair&lt;<span class="type">int</span>,<span class="type">int</span>&gt; PII;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">double</span> db;</span><br><span class="line"><span class="type">const</span> ll mod=<span class="number">100003</span>;</span><br><span class="line"><span class="type">const</span> <span class="type">int</span> INF = <span class="number">0x3f3f3f3f</span>;</span><br><span class="line"><span class="function">ll <span class="title">gcd</span><span class="params">(ll a,ll b)</span> </span>&#123; <span class="keyword">return</span> b?<span class="built_in">gcd</span>(b,a%b):a;&#125;</span><br><span class="line"><span class="comment">// head</span></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> N = <span class="number">100010</span>, M = <span class="number">400010</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> h[N], e[M], ne[M], idx;</span><br><span class="line"><span class="type">int</span> n, m;</span><br><span class="line"><span class="type">int</span> dist[N], cnt[N], q[N];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">add</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    e[idx] = b, ne[idx] = h[a], h[a] = idx ++;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">bfs</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">memset</span>(dist, <span class="number">0x3f</span>, <span class="keyword">sizeof</span> dist);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> hh = <span class="number">0</span>, tt = <span class="number">1</span>;</span><br><span class="line">    q[hh] = <span class="number">1</span>;</span><br><span class="line">    dist[<span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">    cnt[<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(hh &lt;= tt)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">int</span> t = q[hh ++];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i = h[t]; ~i; i = ne[i])</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="type">int</span> j = e[i];</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(dist[j] &gt; dist[t] + <span class="number">1</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                dist[j] = dist[t] + <span class="number">1</span>;</span><br><span class="line">                cnt[j] = cnt[t];</span><br><span class="line">                q[++ tt] = j;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span>(dist[j] == dist[t] + <span class="number">1</span>) <span class="comment">// 最短路有多条</span></span><br><span class="line">            &#123;</span><br><span class="line">                cnt[j] = (cnt[j] + cnt[t]) % mod;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    cin &gt;&gt; n &gt;&gt; m;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// build</span></span><br><span class="line">    <span class="built_in">memset</span>(h, <span class="number">-1</span>, <span class="keyword">sizeof</span> h);</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">0</span>; i &lt; m; i ++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">int</span> a, b;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">&quot;%d%d&quot;</span>,&amp;a,&amp;b);</span><br><span class="line">        <span class="comment">// 题意可能有点问题应该所有边都是无向边</span></span><br><span class="line">        <span class="comment">// 5 5</span></span><br><span class="line">        <span class="comment">// 1 2  </span></span><br><span class="line">        <span class="comment">// 2 3</span></span><br><span class="line">        <span class="comment">// 3 4</span></span><br><span class="line">        <span class="comment">// 4 1</span></span><br><span class="line">        <span class="comment">// 4 5</span></span><br><span class="line">        <span class="built_in">add</span>(a,b);</span><br><span class="line">        <span class="built_in">add</span>(b,a); </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 最短路计数</span></span><br><span class="line">    <span class="built_in">bfs</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">        cout &lt;&lt; cnt[i] &lt;&lt; endl;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>AcWing</category>
-        <category>图论</category>
-        <category>最短路</category>
-        <category>与dp结合</category>
-      </categories>
-      <tags>
-        <tag>最短路</tag>
-        <tag>图论</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>AcWing 1135.新年好</title>
     <url>/2022/07/19/AcWing-1135-%E6%96%B0%E5%B9%B4%E5%A5%BD/</url>
     <content><![CDATA[<h2 id="AcWing-1135-新年好"><a href="#AcWing-1135-新年好" class="headerlink" title="AcWing 1135.新年好"></a><a href="https://www.acwing.com/problem/content/1137/">AcWing 1135.新年好</a></h2><p>重庆城里有 n 个车站，m 条 双向 公路连接其中的某些车站。<br>每两个车站最多用一条公路连接，从任何一个车站出发都可以经过一条或者多条公路到达其他车站，但不同的路径需要花费的时间可能不同。<br>在一条路径上花费的时间等于路径上所有公路需要的时间之和。<br>佳佳的家在车站 1，他有五个亲戚，分别住在车站 a,b,c,d,e。<br>过年了，他需要从自己的家出发，拜访每个亲戚（顺序任意），给他们送去节日的祝福。<br>怎样走，才需要最少的时间？</p>
@@ -271,6 +271,25 @@
       <tags>
         <tag>单源最短路</tag>
         <tag>枚举</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>AcWing 1293. 夏洛克和他的女朋友</title>
+    <url>/2022/09/25/AcWing-1293-%E5%A4%8F%E6%B4%9B%E5%85%8B%E5%92%8C%E4%BB%96%E7%9A%84%E5%A5%B3%E6%9C%8B%E5%8F%8B/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>AcWing 178. 第K短路</title>
+    <url>/2022/09/16/AcWing-178-%E7%AC%ACK%E7%9F%AD%E8%B7%AF/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>AcWing</category>
+        <category>搜索</category>
+        <category>A-star</category>
+      </categories>
+      <tags>
+        <tag>搜索</tag>
+        <tag>A-start</tag>
       </tags>
   </entry>
   <entry>
@@ -295,25 +314,6 @@
 <p>数据范围<br>n≤1000,m≤20000,<br>1≤s≤n,<br>0&lt; w &lt; n<br>0&lt; t ≤ 1000<br>输入样例：<br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">5 8 5</span><br><span class="line">1 2 2</span><br><span class="line">1 5 3</span><br><span class="line">1 3 4</span><br><span class="line">2 4 7</span><br><span class="line">2 5 6</span><br><span class="line">2 3 5</span><br><span class="line">3 5 1</span><br><span class="line">4 5 1</span><br><span class="line">2</span><br><span class="line">2 3</span><br><span class="line">4 3 4</span><br><span class="line">1 2 3</span><br><span class="line">1 3 4</span><br><span class="line">2 3 2</span><br><span class="line">1</span><br><span class="line">1</span><br></pre></td></tr></table></figure><br>输出样例：<br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1</span><br><span class="line">-1</span><br></pre></td></tr></table></figure></p>
 <h2 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h2><p>由于有多个起点但是有且仅有一个终点，我们可以反向建图，从多源点转化成单源点问题</p>
 <h2 id="CODE"><a href="#CODE" class="headerlink" title="CODE"></a>CODE</h2><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> rep(i,a,n) for (int i=a;i&lt;n;i++)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> per(i,a,n) for (int i=n-1;i&gt;=a;i--)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> pb push_back</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> eb emplace_back</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> mp make_pair</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> all(x) (x).begin(),(x).end()</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> fi first</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> se second</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SZ(x) ((int)(x).size())</span></span><br><span class="line"><span class="keyword">typedef</span> vector&lt;<span class="type">int</span>&gt; VI;</span><br><span class="line"><span class="keyword">typedef</span> basic_string&lt;<span class="type">int</span>&gt; BI;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">long</span> <span class="type">long</span> ll;</span><br><span class="line"><span class="keyword">typedef</span> pair&lt;<span class="type">int</span>,<span class="type">int</span>&gt; PII;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">double</span> db;</span><br><span class="line"><span class="type">const</span> ll mod=<span class="number">1000000007</span>;</span><br><span class="line"><span class="type">const</span> <span class="type">int</span> INF = <span class="number">0x3f3f3f3f</span>;</span><br><span class="line"><span class="function">ll <span class="title">gcd</span><span class="params">(ll a,ll b)</span> </span>&#123; <span class="keyword">return</span> b?<span class="built_in">gcd</span>(b,a%b):a;&#125;</span><br><span class="line"><span class="comment">// head</span></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> N = <span class="number">1005</span>, M = <span class="number">20010</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> h[N], e[M] ,ne[M], w[M], idx;</span><br><span class="line"><span class="type">int</span> ed[N], dist[N];</span><br><span class="line"><span class="type">bool</span> st[N];</span><br><span class="line"><span class="type">int</span> n, en, m, S;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">add</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b, <span class="type">int</span> c)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    e[idx] = b, w[idx] = c, ne[idx] = h[a], h[a] = idx ++;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">dijkstra</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    priority_queue&lt;PII, vector&lt;PII&gt;, greater&lt;PII&gt;&gt; heap;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">memset</span>(dist, <span class="number">0x3f</span>, <span class="keyword">sizeof</span> dist);</span><br><span class="line">    <span class="built_in">memset</span>(st,<span class="literal">false</span>, <span class="keyword">sizeof</span> st);</span><br><span class="line">    dist[S] = <span class="number">0</span>;</span><br><span class="line">    heap.<span class="built_in">push</span>(&#123;dist[S], S&#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(heap.<span class="built_in">size</span>())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">auto</span> t = heap.<span class="built_in">top</span>(); </span><br><span class="line">        heap.<span class="built_in">pop</span>();</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> ver = t.second;</span><br><span class="line">        <span class="keyword">if</span>(st[ver]) <span class="keyword">continue</span>;</span><br><span class="line">        st[ver] = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i = h[ver]; ~i; i = ne[i])</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="type">int</span> j = e[i];</span><br><span class="line">            <span class="keyword">if</span>(dist[j] &gt; dist[ver] + w[i])</span><br><span class="line">            &#123;</span><br><span class="line">                dist[j] = dist[ver] + w[i];</span><br><span class="line">                heap.<span class="built_in">push</span>(&#123;dist[j],j&#125;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">while</span>(cin &gt;&gt; n &gt;&gt; m &gt;&gt; S)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// init</span></span><br><span class="line">        <span class="built_in">memset</span>(h,<span class="number">-1</span>,<span class="keyword">sizeof</span> h);</span><br><span class="line">        idx = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">0</span>; i &lt; m; i ++)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="type">int</span> a, b, c;</span><br><span class="line">            cin &gt;&gt; a &gt;&gt; b &gt;&gt; c;</span><br><span class="line">            <span class="built_in">add</span>(b,a,c);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        cin &gt;&gt; en;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">0</span>; i &lt; en; i ++)</span><br><span class="line">            cin &gt;&gt; ed[i];</span><br><span class="line"></span><br><span class="line">        <span class="built_in">dijkstra</span>();</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> ans = INF;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">0</span>; i &lt; en; i ++)</span><br><span class="line">            ans = <span class="built_in">min</span>(ans, dist[ed[i]]);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(ans == INF) cout &lt;&lt; <span class="string">&quot;-1&quot;</span> &lt;&lt; endl;</span><br><span class="line">        <span class="keyword">else</span> cout &lt;&lt; ans &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
-  </entry>
-  <entry>
-    <title>AcWing 1293. 夏洛克和他的女朋友</title>
-    <url>/2022/09/25/AcWing-1293-%E5%A4%8F%E6%B4%9B%E5%85%8B%E5%92%8C%E4%BB%96%E7%9A%84%E5%A5%B3%E6%9C%8B%E5%8F%8B/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
-    <title>AcWing 178. 第K短路</title>
-    <url>/2022/09/16/AcWing-178-%E7%AC%ACK%E7%9F%AD%E8%B7%AF/</url>
-    <content><![CDATA[]]></content>
-      <categories>
-        <category>AcWing</category>
-        <category>搜索</category>
-        <category>A-star</category>
-      </categories>
-      <tags>
-        <tag>搜索</tag>
-        <tag>A-start</tag>
-      </tags>
   </entry>
   <entry>
     <title>AcWing 179. 八数码(A-star算法模版)</title>
@@ -514,6 +514,28 @@
       </tags>
   </entry>
   <entry>
+    <title>CodeForces - 1699B Almost Ternary Matrix</title>
+    <url>/2022/07/13/CF-1699B-Almost-Ternary-Matrix/</url>
+    <content><![CDATA[<h2 id="CF-1699B"><a href="#CF-1699B" class="headerlink" title="CF-1699B"></a><a href="https://codeforces.com/problemset/problem/1699/B">CF-1699B</a></h2><p>You are given two even integers 𝑛 and 𝑚. Your task is to find any binary matrix 𝑎 with 𝑛 rows and 𝑚 columns where every cell (𝑖,𝑗) has exactly two neighbours with a different value than 𝑎𝑖,𝑗.</p>
+<p>Two cells in the matrix are considered neighbours if and only if they share a side. More formally, the neighbours of cell (𝑥,𝑦) are: (𝑥−1,𝑦), (𝑥,𝑦+1), (𝑥+1,𝑦) and (𝑥,𝑦−1).</p>
+<p>It can be proven that under the given constraints, an answer always exists.</p>
+<p>Input<br>Each test contains multiple test cases. The first line of input contains a single integer 𝑡 (1≤𝑡≤100) — the number of test cases. The following lines contain the descriptions of the test cases.</p>
+<p>The only line of each test case contains two even integers 𝑛 and 𝑚 (2≤𝑛,𝑚≤50) — the height and width of the binary matrix, respectively.</p>
+<p>Output<br>For each test case, print 𝑛 lines, each of which contains 𝑚 numbers, equal to 0 or 1 — any binary matrix which satisfies the constraints described in the statement.</p>
+<p>It can be proven that under the given constraints, an answer always exists.</p>
+<p>Example<br>input<br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">3</span><br><span class="line">2 4</span><br><span class="line">2 2</span><br><span class="line">4 4</span><br></pre></td></tr></table></figure><br>output<br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 0 0 1</span><br><span class="line">0 1 1 0</span><br><span class="line">1 0</span><br><span class="line">0 1</span><br><span class="line">1 0 1 0</span><br><span class="line">0 0 1 1</span><br><span class="line">1 1 0 0</span><br><span class="line">0 1 0 1</span><br></pre></td></tr></table></figure></p>
+<h3 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h3><p> <img src="[https://](https://codeforces.com/predownloaded/75/c4/75c46e19cc3cf6f890139b0e74774c3a6fc387db.png" alt="">)<br>我们需要构造上图的2x2矩形，我们可以看出宏观上来看都是每个2个连续出现两次黑块/白块，左上角的坐标记作（1，1）我们可以得到一个公式 (i%4 &lt;=1 != j%4&lt;= 1) / (i%4 &lt;=1 == j%4&lt;= 1)时是黑块</p>
+<h3 id="CODE"><a href="#CODE" class="headerlink" title="CODE"></a>CODE</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstdio&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stack&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;queue&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;deque&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;set&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;cmath&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LL long long</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> pii pair<span class="string">&lt;int,int&gt;</span>x</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">using namespace <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> INF = <span class="number">0x3f3f3f3f</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> T;</span><br><span class="line"><span class="type">int</span> n,m;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; T;</span><br><span class="line">    <span class="keyword">while</span>(T --)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; n &gt;&gt; m;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">            <span class="keyword">for</span>(<span class="type">int</span> j = <span class="number">1</span>; j &lt;= m; j ++)</span><br><span class="line">                <span class="built_in">cout</span> &lt;&lt; ((i % <span class="number">4</span> &lt;= <span class="number">1</span>) == (j % <span class="number">4</span> &lt;= <span class="number">1</span>)) &lt;&lt; <span class="string">&quot; \n&quot;</span>[j==m];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>CodeForces</category>
+        <category>思维题</category>
+      </categories>
+      <tags>
+        <tag>思维题</tag>
+        <tag>构造</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>AcWing 920. 最优乘车</title>
     <url>/2022/08/11/AcWing-920-%E6%9C%80%E4%BC%98%E4%B9%98%E8%BD%A6/</url>
     <content><![CDATA[<h2 id="AcWing-920-最优乘车"><a href="#AcWing-920-最优乘车" class="headerlink" title="AcWing 920. 最优乘车"></a><a href="https://www.acwing.com/problem/content/342/">AcWing 920. 最优乘车</a></h2><p>在郊区有 N 座通信基站，P 条 双向 电缆，第 i 条电缆连接基站 Ai 和 Bi。</p>
@@ -547,26 +569,9 @@
       </tags>
   </entry>
   <entry>
-    <title>CodeForces - 1699B Almost Ternary Matrix</title>
-    <url>/2022/07/13/CF-1699B-Almost-Ternary-Matrix/</url>
-    <content><![CDATA[<h2 id="CF-1699B"><a href="#CF-1699B" class="headerlink" title="CF-1699B"></a><a href="https://codeforces.com/problemset/problem/1699/B">CF-1699B</a></h2><p>You are given two even integers 𝑛 and 𝑚. Your task is to find any binary matrix 𝑎 with 𝑛 rows and 𝑚 columns where every cell (𝑖,𝑗) has exactly two neighbours with a different value than 𝑎𝑖,𝑗.</p>
-<p>Two cells in the matrix are considered neighbours if and only if they share a side. More formally, the neighbours of cell (𝑥,𝑦) are: (𝑥−1,𝑦), (𝑥,𝑦+1), (𝑥+1,𝑦) and (𝑥,𝑦−1).</p>
-<p>It can be proven that under the given constraints, an answer always exists.</p>
-<p>Input<br>Each test contains multiple test cases. The first line of input contains a single integer 𝑡 (1≤𝑡≤100) — the number of test cases. The following lines contain the descriptions of the test cases.</p>
-<p>The only line of each test case contains two even integers 𝑛 and 𝑚 (2≤𝑛,𝑚≤50) — the height and width of the binary matrix, respectively.</p>
-<p>Output<br>For each test case, print 𝑛 lines, each of which contains 𝑚 numbers, equal to 0 or 1 — any binary matrix which satisfies the constraints described in the statement.</p>
-<p>It can be proven that under the given constraints, an answer always exists.</p>
-<p>Example<br>input<br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">3</span><br><span class="line">2 4</span><br><span class="line">2 2</span><br><span class="line">4 4</span><br></pre></td></tr></table></figure><br>output<br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 0 0 1</span><br><span class="line">0 1 1 0</span><br><span class="line">1 0</span><br><span class="line">0 1</span><br><span class="line">1 0 1 0</span><br><span class="line">0 0 1 1</span><br><span class="line">1 1 0 0</span><br><span class="line">0 1 0 1</span><br></pre></td></tr></table></figure></p>
-<h3 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h3><p> <img src="[https://](https://codeforces.com/predownloaded/75/c4/75c46e19cc3cf6f890139b0e74774c3a6fc387db.png" alt="">)<br>我们需要构造上图的2x2矩形，我们可以看出宏观上来看都是每个2个连续出现两次黑块/白块，左上角的坐标记作（1，1）我们可以得到一个公式 (i%4 &lt;=1 != j%4&lt;= 1) / (i%4 &lt;=1 == j%4&lt;= 1)时是黑块</p>
-<h3 id="CODE"><a href="#CODE" class="headerlink" title="CODE"></a>CODE</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstdio&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stack&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;queue&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;deque&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;set&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;cmath&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LL long long</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> pii pair<span class="string">&lt;int,int&gt;</span>x</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">using namespace <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> INF = <span class="number">0x3f3f3f3f</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> T;</span><br><span class="line"><span class="type">int</span> n,m;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; T;</span><br><span class="line">    <span class="keyword">while</span>(T --)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; n &gt;&gt; m;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">            <span class="keyword">for</span>(<span class="type">int</span> j = <span class="number">1</span>; j &lt;= m; j ++)</span><br><span class="line">                <span class="built_in">cout</span> &lt;&lt; ((i % <span class="number">4</span> &lt;= <span class="number">1</span>) == (j % <span class="number">4</span> &lt;= <span class="number">1</span>)) &lt;&lt; <span class="string">&quot; \n&quot;</span>[j==m];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>CodeForces</category>
-        <category>思维题</category>
-      </categories>
-      <tags>
-        <tag>思维题</tag>
-        <tag>构造</tag>
-      </tags>
+    <title>CodeForces - 337D Book of Evil</title>
+    <url>/2022/07/15/CF337D-Book-of-Evil/</url>
+    <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>CodeForces - 631C REPORT</title>
@@ -586,11 +591,6 @@
       <tags>
         <tag>单调栈</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>CodeForces - 337D Book of Evil</title>
-    <url>/2022/07/15/CF337D-Book-of-Evil/</url>
-    <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>CodeForces - 1529C Parsa&#39;s Humongous Tree</title>
@@ -1089,6 +1089,25 @@ Input
       </tags>
   </entry>
   <entry>
+    <title>git</title>
+    <url>/2022/09/12/git/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>Hello World</title>
+    <url>/2022/08/31/hello-world/</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+]]></content>
+  </entry>
+  <entry>
     <title>ac自动机</title>
     <url>/2022/08/08/ac%E8%87%AA%E5%8A%A8%E6%9C%BA/</url>
     <content><![CDATA[<p>本文章来自<a href="https://oi-wiki.org/string/ac-automaton/">OI WIKI</a></p>
@@ -1192,25 +1211,6 @@ Input
       <tags>
         <tag>笔记</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>git</title>
-    <url>/2022/09/12/git/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
-    <title>Hello World</title>
-    <url>/2022/08/31/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-]]></content>
   </entry>
   <entry>
     <title>python学习笔记</title>
@@ -1590,6 +1590,75 @@ Input
       </tags>
   </entry>
   <entry>
+    <title>计算机网络</title>
+    <url>/2022/09/28/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/</url>
+    <content><![CDATA[<h2 id="计算机网络"><a href="#计算机网络" class="headerlink" title="计算机网络"></a>计算机网络</h2><h3 id="第三章-数据链路层"><a href="#第三章-数据链路层" class="headerlink" title="第三章 数据链路层"></a>第三章 数据链路层</h3><p>不太理解什么是可靠传输？<br> 海明码这类的纠错编码，虽然有纠错能力，但是纠错能力有限。比如<code>3</code>码距的海明码只能检验<code>两</code>位错，纠正<code>一</code>位错。如果出现两位错就无法完全的纠错了。所以纠错编码仍然不是可靠性传输。</p>
+]]></content>
+      <categories>
+        <category>考研</category>
+        <category>计算机网络</category>
+      </categories>
+      <tags>
+        <tag>计算机网络</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>负环</title>
+    <url>/2022/07/20/%E8%B4%9F%E7%8E%AF/</url>
+    <content><![CDATA[<h2 id="负环"><a href="#负环" class="headerlink" title="负环"></a>负环</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>权值之和为负的环称为负环（与之相对应的就是正环）</p>
+<h3 id="求解方法"><a href="#求解方法" class="headerlink" title="求解方法"></a>求解方法</h3><ol>
+<li>方法一：统计每个点入队的次数，如果某个点入队n次，则说明存在负环（bellman-ford)</li>
+<li>统计当前每个点的最短路中所包含的边数，如果某点的最短路所包含的边数大于等于n，则说明存在环.</li>
+</ol>
+<p>方法一的最坏情况比较糟糕，因为假如一个环1-2-3-4-n-1,一共有n个顶点，第一次这个圈所有点都进入队列当中仅当这个圈遍历到<code>n-1</code>圈才会出现某个点入队n次的情况 O（n*(n-1) + 1) = O(n^2)<br>方法二则是O（n）的，因为如果1-n上路径超过了n-1条边必然会有环</p>
+<h3 id="例题spfa判断负环"><a href="#例题spfa判断负环" class="headerlink" title="例题spfa判断负环"></a>例题<a href="https://www.acwing.com/problem/content/854/">spfa判断负环</a></h3><p>给定一个 n 个点 m 条边的有向图，图中可能存在重边和自环， 边权可能为负数。</p>
+<p>请你判断图中是否存在负权回路。</p>
+<p>输入格式<br>第一行包含整数 n 和 m。</p>
+<p>接下来 m 行每行包含三个整数 x,y,z，表示存在一条从点 x 到点 y 的有向边，边长为 z。</p>
+<p>输出格式<br>如果图中存在负权回路，则输出 Yes，否则输出 No。</p>
+<p>数据范围<br>1≤n≤2000,<br>1≤m≤10000,<br>图中涉及边长绝对值均不超过 10000。</p>
+<p>Input<br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">3 3</span><br><span class="line">1 2 -1</span><br><span class="line">2 3 4</span><br><span class="line">3 1 -4</span><br></pre></td></tr></table></figure><br>Output<br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Yes</span><br></pre></td></tr></table></figure></p>
+<h3 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h3><p>由于从某个起点开始的最短路径上不一定是含有负环的，但是我们需要判断图上的是否有负环怎么办？？<br><strong>构造虚拟源点</strong>， 虚拟源点向每个点都连一条边权为0的边<code>初始化dist[i] = 0</code>，要是有负环这个虚拟源点必然包含在其中。这里的dist数组就是维护到虚拟源点的最短距离</p>
+<h3 id="CODE"><a href="#CODE" class="headerlink" title="CODE"></a>CODE</h3><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;queue&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> N = <span class="number">2010</span>, M = <span class="number">10010</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> h[N], e[M], ne[M], w[M], idx;</span><br><span class="line"><span class="type">int</span> n, m;</span><br><span class="line"><span class="type">int</span> dist[N], cnt[N];</span><br><span class="line"><span class="type">bool</span> st[N];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">spfa</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    queue&lt;<span class="type">int</span>&gt; q;</span><br><span class="line">    <span class="comment">//把所有点放进队列里面</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">    &#123;</span><br><span class="line">        q.<span class="built_in">push</span>(i);</span><br><span class="line">        st[i] = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(q.<span class="built_in">size</span>())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">int</span> t = q.<span class="built_in">front</span>();</span><br><span class="line">        q.<span class="built_in">pop</span>();</span><br><span class="line">        st[t] = <span class="literal">false</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i = h[t]; i != <span class="number">-1</span>; i = ne[i])</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="type">int</span> j = e[i];</span><br><span class="line">            <span class="keyword">if</span>(dist[j] &gt; dist[t] + w[i])</span><br><span class="line">            &#123;</span><br><span class="line">                dist[j] = dist[t] + w[i];</span><br><span class="line">                cnt[j] = cnt[t] + <span class="number">1</span>;</span><br><span class="line">                </span><br><span class="line">                <span class="keyword">if</span>(cnt[j] &gt;= n) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">                </span><br><span class="line">                <span class="keyword">if</span>(!st[j])</span><br><span class="line">                &#123;</span><br><span class="line">                    q.<span class="built_in">push</span>(j);</span><br><span class="line">                    st[j] = <span class="literal">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">add</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b, <span class="type">int</span> c)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    e[idx] = b, w[idx] = c, ne[idx] = h[a], h[a] = idx ++;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    cin&gt;&gt;n&gt;&gt;m;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">memset</span>(h, <span class="number">-1</span>, <span class="keyword">sizeof</span> h);</span><br><span class="line">    <span class="keyword">while</span>(m --)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">int</span> a, b, c;</span><br><span class="line">        cin&gt;&gt;a&gt;&gt;b&gt;&gt;c;</span><br><span class="line">        <span class="built_in">add</span>(a, b, c);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">spfa</span>()) <span class="built_in">puts</span>(<span class="string">&quot;Yes&quot;</span>);</span><br><span class="line">    <span class="keyword">else</span> <span class="built_in">puts</span>(<span class="string">&quot;No&quot;</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="玄学优化"><a href="#玄学优化" class="headerlink" title="玄学优化"></a>玄学优化</h3><p>由于很多题目都出现了卡队列形式的spfa，当前呈现了spfa已死的情况，所以spfa还需要一些玄学优化，将时间复杂度降到O（nm）以下</p>
+<h3 id="节点更新超过了n次直接判定有负环"><a href="#节点更新超过了n次直接判定有负环" class="headerlink" title="节点更新超过了n次直接判定有负环"></a>节点更新超过了n次直接判定有负环</h3>]]></content>
+      <tags>
+        <tag>笔记</tag>
+        <tag>负环</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>高等数学 个人易错点</title>
+    <url>/2022/09/25/%E9%AB%98%E7%AD%89%E6%95%B0%E5%AD%A6-%E4%B8%AA%E4%BA%BA%E6%98%93%E9%94%99%E7%82%B9/</url>
+    <content><![CDATA[<h2 id="无穷大与无穷小"><a href="#无穷大与无穷小" class="headerlink" title="无穷大与无穷小"></a>无穷大与无穷小</h2><h3 id="无穷大"><a href="#无穷大" class="headerlink" title="无穷大"></a>无穷大</h3><ul>
+<li><strong>两个</strong>无穷大相乘一定等于无穷大</li>
+<li>无穷大与有界变量的和一定为无穷大</li>
+</ul>
+<h3 id="无穷小"><a href="#无穷小" class="headerlink" title="无穷小"></a>无穷小</h3><ul>
+<li>有限个无穷小之和一定为无穷小</li>
+<li>有限个无穷小之积一定为无穷小</li>
+<li>无穷小与有界量之积仍是无穷小</li>
+</ul>
+<h2 id="等价无穷小代换"><a href="#等价无穷小代换" class="headerlink" title="等价无穷小代换"></a>等价无穷小代换</h2><p> $x-sinx$ ~ $arcsinx - x$ ~ ${x^3}\over {6}$<br> $x-tanx$ ~ $arctanx - x$ ~ ${x^3}\over {6}$</p>
+]]></content>
+      <categories>
+        <category>考研</category>
+        <category>高等数学</category>
+      </categories>
+      <tags>
+        <tag>考研</tag>
+        <tag>高等数学</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>高等数学复习计划</title>
+    <url>/2022/09/21/%E9%AB%98%E7%AD%89%E6%95%B0%E5%AD%A6%E5%A4%8D%E4%B9%A0%E8%AE%A1%E5%88%92/</url>
+    <content><![CDATA[<ol>
+<li>证明极限不存在</li>
+</ol>
+]]></content>
+  </entry>
+  <entry>
     <title>线段树</title>
     <url>/2022/07/25/%E7%BA%BF%E6%AE%B5%E6%A0%91/</url>
     <content><![CDATA[<h2 id="线段树"><a href="#线段树" class="headerlink" title="线段树"></a>线段树</h2><p>线段树主要是用来动态维护并且对区间进行操作的，因为题目可能要求边操作边进行查询。<br>对于线段树题目主要考验的是代码能力以及使用变量去维护我们需要查询的信息。所以应当多写多练代码。</p>
@@ -1680,75 +1749,6 @@ Input
         <tag>线段树</tag>
         <tag>数据结构笔记</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>计算机网络</title>
-    <url>/2022/09/28/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/</url>
-    <content><![CDATA[<h2 id="计算机网络"><a href="#计算机网络" class="headerlink" title="计算机网络"></a>计算机网络</h2><h3 id="第三章-数据链路层"><a href="#第三章-数据链路层" class="headerlink" title="第三章 数据链路层"></a>第三章 数据链路层</h3><p>不太理解什么是可靠传输？<br> 海明码这类的纠错编码，虽然有纠错能力，但是纠错能力有限。比如<code>3</code>码距的海明码只能检验<code>两</code>位错，纠正<code>一</code>位错。如果出现两位错就无法完全的纠错了。所以纠错编码仍然不是可靠性传输。</p>
-]]></content>
-      <categories>
-        <category>考研</category>
-        <category>计算机网络</category>
-      </categories>
-      <tags>
-        <tag>计算机网络</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>负环</title>
-    <url>/2022/07/20/%E8%B4%9F%E7%8E%AF/</url>
-    <content><![CDATA[<h2 id="负环"><a href="#负环" class="headerlink" title="负环"></a>负环</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>权值之和为负的环称为负环（与之相对应的就是正环）</p>
-<h3 id="求解方法"><a href="#求解方法" class="headerlink" title="求解方法"></a>求解方法</h3><ol>
-<li>方法一：统计每个点入队的次数，如果某个点入队n次，则说明存在负环（bellman-ford)</li>
-<li>统计当前每个点的最短路中所包含的边数，如果某点的最短路所包含的边数大于等于n，则说明存在环.</li>
-</ol>
-<p>方法一的最坏情况比较糟糕，因为假如一个环1-2-3-4-n-1,一共有n个顶点，第一次这个圈所有点都进入队列当中仅当这个圈遍历到<code>n-1</code>圈才会出现某个点入队n次的情况 O（n*(n-1) + 1) = O(n^2)<br>方法二则是O（n）的，因为如果1-n上路径超过了n-1条边必然会有环</p>
-<h3 id="例题spfa判断负环"><a href="#例题spfa判断负环" class="headerlink" title="例题spfa判断负环"></a>例题<a href="https://www.acwing.com/problem/content/854/">spfa判断负环</a></h3><p>给定一个 n 个点 m 条边的有向图，图中可能存在重边和自环， 边权可能为负数。</p>
-<p>请你判断图中是否存在负权回路。</p>
-<p>输入格式<br>第一行包含整数 n 和 m。</p>
-<p>接下来 m 行每行包含三个整数 x,y,z，表示存在一条从点 x 到点 y 的有向边，边长为 z。</p>
-<p>输出格式<br>如果图中存在负权回路，则输出 Yes，否则输出 No。</p>
-<p>数据范围<br>1≤n≤2000,<br>1≤m≤10000,<br>图中涉及边长绝对值均不超过 10000。</p>
-<p>Input<br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">3 3</span><br><span class="line">1 2 -1</span><br><span class="line">2 3 4</span><br><span class="line">3 1 -4</span><br></pre></td></tr></table></figure><br>Output<br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Yes</span><br></pre></td></tr></table></figure></p>
-<h3 id="题解"><a href="#题解" class="headerlink" title="题解"></a>题解</h3><p>由于从某个起点开始的最短路径上不一定是含有负环的，但是我们需要判断图上的是否有负环怎么办？？<br><strong>构造虚拟源点</strong>， 虚拟源点向每个点都连一条边权为0的边<code>初始化dist[i] = 0</code>，要是有负环这个虚拟源点必然包含在其中。这里的dist数组就是维护到虚拟源点的最短距离</p>
-<h3 id="CODE"><a href="#CODE" class="headerlink" title="CODE"></a>CODE</h3><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;queue&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> N = <span class="number">2010</span>, M = <span class="number">10010</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> h[N], e[M], ne[M], w[M], idx;</span><br><span class="line"><span class="type">int</span> n, m;</span><br><span class="line"><span class="type">int</span> dist[N], cnt[N];</span><br><span class="line"><span class="type">bool</span> st[N];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">spfa</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    queue&lt;<span class="type">int</span>&gt; q;</span><br><span class="line">    <span class="comment">//把所有点放进队列里面</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">1</span>; i &lt;= n; i ++)</span><br><span class="line">    &#123;</span><br><span class="line">        q.<span class="built_in">push</span>(i);</span><br><span class="line">        st[i] = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(q.<span class="built_in">size</span>())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">int</span> t = q.<span class="built_in">front</span>();</span><br><span class="line">        q.<span class="built_in">pop</span>();</span><br><span class="line">        st[t] = <span class="literal">false</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i = h[t]; i != <span class="number">-1</span>; i = ne[i])</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="type">int</span> j = e[i];</span><br><span class="line">            <span class="keyword">if</span>(dist[j] &gt; dist[t] + w[i])</span><br><span class="line">            &#123;</span><br><span class="line">                dist[j] = dist[t] + w[i];</span><br><span class="line">                cnt[j] = cnt[t] + <span class="number">1</span>;</span><br><span class="line">                </span><br><span class="line">                <span class="keyword">if</span>(cnt[j] &gt;= n) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">                </span><br><span class="line">                <span class="keyword">if</span>(!st[j])</span><br><span class="line">                &#123;</span><br><span class="line">                    q.<span class="built_in">push</span>(j);</span><br><span class="line">                    st[j] = <span class="literal">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">add</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b, <span class="type">int</span> c)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    e[idx] = b, w[idx] = c, ne[idx] = h[a], h[a] = idx ++;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    cin&gt;&gt;n&gt;&gt;m;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">memset</span>(h, <span class="number">-1</span>, <span class="keyword">sizeof</span> h);</span><br><span class="line">    <span class="keyword">while</span>(m --)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">int</span> a, b, c;</span><br><span class="line">        cin&gt;&gt;a&gt;&gt;b&gt;&gt;c;</span><br><span class="line">        <span class="built_in">add</span>(a, b, c);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">spfa</span>()) <span class="built_in">puts</span>(<span class="string">&quot;Yes&quot;</span>);</span><br><span class="line">    <span class="keyword">else</span> <span class="built_in">puts</span>(<span class="string">&quot;No&quot;</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="玄学优化"><a href="#玄学优化" class="headerlink" title="玄学优化"></a>玄学优化</h3><p>由于很多题目都出现了卡队列形式的spfa，当前呈现了spfa已死的情况，所以spfa还需要一些玄学优化，将时间复杂度降到O（nm）以下</p>
-<h3 id="节点更新超过了n次直接判定有负环"><a href="#节点更新超过了n次直接判定有负环" class="headerlink" title="节点更新超过了n次直接判定有负环"></a>节点更新超过了n次直接判定有负环</h3>]]></content>
-      <tags>
-        <tag>笔记</tag>
-        <tag>负环</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>高等数学 个人易错点</title>
-    <url>/2022/09/25/%E9%AB%98%E7%AD%89%E6%95%B0%E5%AD%A6-%E4%B8%AA%E4%BA%BA%E6%98%93%E9%94%99%E7%82%B9/</url>
-    <content><![CDATA[<h2 id="无穷大与无穷小"><a href="#无穷大与无穷小" class="headerlink" title="无穷大与无穷小"></a>无穷大与无穷小</h2><h3 id="无穷大"><a href="#无穷大" class="headerlink" title="无穷大"></a>无穷大</h3><ul>
-<li><strong>两个</strong>无穷大相乘一定等于无穷大</li>
-<li>无穷大与有界变量的和一定为无穷大</li>
-</ul>
-<h3 id="无穷小"><a href="#无穷小" class="headerlink" title="无穷小"></a>无穷小</h3><ul>
-<li>有限个无穷小之和一定为无穷小</li>
-<li>有限个无穷小之积一定为无穷小</li>
-<li>无穷小与有界量之积仍是无穷小</li>
-</ul>
-<h2 id="等价无穷小代换"><a href="#等价无穷小代换" class="headerlink" title="等价无穷小代换"></a>等价无穷小代换</h2><p> $x-sinx$ ~ $arcsinx - x$ ~ ${x^3}\over {6}$<br> $x-tanx$ ~ $arctanx - x$ ~ ${x^3}\over {6}$</p>
-]]></content>
-      <categories>
-        <category>考研</category>
-        <category>高等数学</category>
-      </categories>
-      <tags>
-        <tag>考研</tag>
-        <tag>高等数学</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>高等数学复习计划</title>
-    <url>/2022/09/21/%E9%AB%98%E7%AD%89%E6%95%B0%E5%AD%A6%E5%A4%8D%E4%B9%A0%E8%AE%A1%E5%88%92/</url>
-    <content><![CDATA[<ol>
-<li>证明极限不存在</li>
-</ol>
-]]></content>
   </entry>
   <entry>
     <title>高等数学总结</title>
@@ -1858,6 +1858,23 @@ Input
 <li><a href="https://zhuanlan.zhihu.com/p/390928056">三角函数公式汇总</a></li>
 <li>常用的三种变量代换<script type="math/tex; mode=display">\sqrt{a^2 - x^2}, 令x = a\sin t(OR  a\cos t</script><script type="math/tex; mode=display">\sqrt{a^2 + x^2}, 令x = a\tan t</script><script type="math/tex; mode=display">\sqrt{x^2 - a^2}, 令x = a\sec t</script></li>
 <li>高阶分式展开<script type="math/tex; mode=display">\frac{1 + x + x^2}{x (1 + x^2)} = \frac{A}{x} + \frac{Bx + C}{x^2 + 1}, 然后通过分式相加根据等式一一对应的到参数的值</script></li>
+</ul>
+<h2 id="第五章-定积分"><a href="#第五章-定积分" class="headerlink" title="第五章 定积分"></a>第五章 定积分</h2><h3 id="定积分的概念题目"><a href="#定积分的概念题目" class="headerlink" title="定积分的概念题目"></a>定积分的概念题目</h3><p>由于定积分可以写成合式的极限问题，所以考其概念的题目的时候的一半会要我们求合式的极限<br>例 </p>
+<script type="math/tex; mode=display">\lim_{x\to \infty} (\frac{1}{n + 1} + \frac{1}{n + 2} + \frac{1}{n + n})=</script><p>首先我们一定是先进行夹逼的，但是构造出来的两端数值不等，所以夹逼很难求解。<br>然后我们就需要提出来可爱因子$\frac{1}{n}$,提出来之后看是否能看出来原函数的式子f(x)进行求解</p>
+<h3 id="定积分存在的充分条件"><a href="#定积分存在的充分条件" class="headerlink" title="定积分存在的充分条件"></a>定积分存在的充分条件</h3><ul>
+<li>定理 $f(x), [a,b]上连续的话，则\int_a^b f(x) dx$ 必定存在</li>
+<li>定理 $f(x),[a,b]$上有界，且只有又有限个间断点（很明显这个间断点不能是无穷间断点, …</li>
+<li>定理 $f(x),[a,b]$上只有有限个第一类间断点,…(但是这个结论是把条件放小了些许，也就是满足这个条件的定积分一定存在，但是不满足也有可能存在)</li>
+</ul>
+<h3 id="定积分的几何意义"><a href="#定积分的几何意义" class="headerlink" title="定积分的几何意义"></a>定积分的几何意义</h3><p>对于$\int_a^b f(x)dx$ 这类的定积分的几何意义是，其与x轴之间围成的面积。这里的要<strong>注意</strong>的是$a \le b$</p>
+<h3 id="不等式性质"><a href="#不等式性质" class="headerlink" title="不等式性质"></a>不等式性质</h3><ul>
+<li>$[a,b] 上 f(x) \le g(x)， \int_a^b f(x)dx \le \int_a^b g(x)dx$</li>
+<li>M,m分别是f(x)在[a,b]上的最大值和最小值，$m(b-a) \le \int_a^b f(x) dx \le M(b-a)$</li>
+<li>$|\int_a^b f(x) dx| \le \int_a^b |f(x)|dx$</li>
+</ul>
+<h3 id="积分中值定理"><a href="#积分中值定理" class="headerlink" title="积分中值定理"></a>积分中值定理</h3><ul>
+<li>f(x) 在[a,b]上连续，$\int_a^b f(x) dx = f(\xi)(b-a)$,这个定理可以用拉格朗日微分中值定理证明</li>
+<li>f(x),g(x)在[a,b]上连续，g(x)不变号，$\int_a^b f(x)g(x) dx = f(\xi)\int_a^b g(x) dx$</li>
 </ul>
 ]]></content>
       <categories>
