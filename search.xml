@@ -1277,6 +1277,31 @@ A<Z
       </tags>
   </entry>
   <entry>
+    <title>ML Learning</title>
+    <url>/2022/12/17/ML-Learning/</url>
+    <content><![CDATA[<h1 id="Maching-Learning"><a href="#Maching-Learning" class="headerlink" title="Maching Learning"></a>Maching Learning</h1><h2 id="十三、聚类-Clustering"><a href="#十三、聚类-Clustering" class="headerlink" title="十三、聚类(Clustering)"></a>十三、聚类(Clustering)</h2><h3 id="13-1-无监督学习"><a href="#13-1-无监督学习" class="headerlink" title="13.1 无监督学习"></a>13.1 无监督学习</h3><p>简单的来说，在通常情况下现实生活里面是没有太多已知的东西，换成ML语言来说就是样本集并不携带标签Lable。</p>
+<p>对于监督学习来说，样本集是一个非常标准的已知输入输出，带标签。</p>
+<p>直观上来说的就是从</p>
+<div style="text-align:center">
+<img src="/home/ubuntu/blog/source/images/截屏2022-12-17 11.52.40.png" >
+</div>
+
+<div style="text-align:center">
+<img src="/home/ubuntu/blog/source/images/截屏2022-12-17 14.35.46.png">
+</div>]]></content>
+      <categories>
+        <category>Maching Learning</category>
+      </categories>
+      <tags>
+        <tag>Maching Learning</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Numpy Learning</title>
+    <url>/2022/12/17/Numpy-Learning/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
     <title>POJ - 1201 Intervals</title>
     <url>/2022/07/22/POJ-1201-Intervals/</url>
     <content><![CDATA[<h2 id="POJ-1201-Intervals"><a href="#POJ-1201-Intervals" class="headerlink" title="POJ - 1201 Intervals"></a><a href="https://vjudge.net/problem/POJ-1201">POJ - 1201 Intervals</a></h2><p>You are given n closed, integer intervals [ai, bi] and n integers c1, …, cn.<br>Write a program that:<br>reads the number of intervals, their end points and integers c1, …, cn from the standard input,<br>computes the minimal size of a set Z of integers which has at least ci common elements with interval [ai, bi], for each i=1,2,…,n,<br>writes the answer to the standard output.<br>Input<br>The first line of the input contains an integer n (1 &lt;= n &lt;= 50000) — the number of intervals. The following n lines describe the intervals. The (i+1)-th line of the input contains three integers ai, bi and ci separated by single spaces and such that 0 &lt;= ai &lt;= bi &lt;= 50000 and 1 &lt;= ci &lt;= bi - ai+1.<br>Output<br>The output contains exactly one integer equal to the minimal size of set Z sharing at least ci elements with interval [ai, bi], for each i=1,2,…,n.</p>
@@ -1694,6 +1719,18 @@ Input
       </tags>
   </entry>
   <entry>
+    <title>docker使用</title>
+    <url>/2022/12/15/docker%E4%BD%BF%E7%94%A8/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>工程</category>
+        <category>docker</category>
+      </categories>
+      <tags>
+        <tag>docker</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>git</title>
     <url>/2022/09/12/git/</url>
     <content><![CDATA[]]></content>
@@ -1880,9 +1917,10 @@ Input
   <entry>
     <title>搜索</title>
     <url>/2022/11/27/%E6%90%9C%E7%B4%A2/</url>
-    <content><![CDATA[<h1 id="搜索"><a href="#搜索" class="headerlink" title="搜索"></a>搜索</h1><h2 id="迭代加深"><a href="#迭代加深" class="headerlink" title="迭代加深"></a>迭代加深</h2>]]></content>
+    <content><![CDATA[<h1 id="搜索"><a href="#搜索" class="headerlink" title="搜索"></a>搜索</h1><h2 id="迭代加深"><a href="#迭代加深" class="headerlink" title="迭代加深"></a>迭代加深</h2><h2 id="双向dfs"><a href="#双向dfs" class="headerlink" title="双向dfs"></a>双向dfs</h2><p>双向dfs的思路和双向bfs的思路非常的相似。</p>
+]]></content>
       <categories>
-        <category>算法笔记</category>
+        <category>算法笔记l</category>
         <category>搜索</category>
       </categories>
       <tags>
